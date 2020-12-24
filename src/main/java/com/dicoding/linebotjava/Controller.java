@@ -5,6 +5,7 @@ import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.client.LineSignatureValidator;
 import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.event.MessageEvent;
+import com.linecorp.bot.model.event.message.StickerMessageContent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.StickerMessage;
 import com.linecorp.bot.model.message.TextMessage;
@@ -68,10 +69,17 @@ public class Controller {
                 // kode reply message disini
                 if (event instanceof MessageEvent) {
                     MessageEvent messageEvent = (MessageEvent) event;
-                    TextMessageContent textMessageContent = (TextMessageContent) messageEvent.getMessage();
-                    replyText(messageEvent.getReplyToken(), textMessageContent.getText());
-                    replySticker(messageEvent.getReplyToken(), "1", "1");
+
+                    if(((MessageEvent) event).getMessage() instanceof StickerMessageContent){
+                        StickerMessageContent stickerMessageContent = (StickerMessageContent) messageEvent.getMessage();
+                        replySticker(messageEvent.getReplyToken(), stickerMessageContent.getPackageId(), stickerMessageContent.getStickerId());
+                    }else {
+                        TextMessageContent textMessageContent = (TextMessageContent) messageEvent.getMessage();
+                        replyText(messageEvent.getReplyToken(), textMessageContent.getText());
+                    }
+
                 }
+
             });
 
             return new ResponseEntity<>(HttpStatus.OK);

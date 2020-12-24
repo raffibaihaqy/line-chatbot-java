@@ -39,7 +39,7 @@ public class Controller {
     private void replyText(String replyToken, String messageToUser){
         TextMessage textMessage = new TextMessage(messageToUser);
         ReplyMessage replyMessage = new ReplyMessage(replyToken, textMessage);
-        replyText(replyToken, "Ini pesan balasan");
+        reply(replyMessage);
     }
 
     @RequestMapping(value="/webhook", method= RequestMethod.POST)

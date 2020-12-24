@@ -29,6 +29,7 @@ public class Controller {
     @Qualifier("lineSignatureValidator")
     private LineSignatureValidator lineSignatureValidator;
 
+    //all reply message
     private void reply(ReplyMessage replyMessage) {
         try {
             lineMessagingClient.replyMessage(replyMessage).get();
@@ -69,6 +70,7 @@ public class Controller {
                     MessageEvent messageEvent = (MessageEvent) event;
                     TextMessageContent textMessageContent = (TextMessageContent) messageEvent.getMessage();
                     replyText(messageEvent.getReplyToken(), textMessageContent.getText());
+                    replySticker(messageEvent.getReplyToken(), "1", "1");
                 }
             });
 

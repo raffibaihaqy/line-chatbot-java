@@ -44,7 +44,6 @@ public class Controller {
     }
 
     private void replySticker(String replyToken, String packageId, String stickerId){
-        public StickerMessage;
         StickerMessage stickerMessage = new StickerMessage(packageId, stickerId);
         ReplyMessage replyMessage = new ReplyMessage(replyToken, stickerMessage);
         reply(replyMessage);

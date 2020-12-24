@@ -28,6 +28,20 @@ public class Controller {
     @Qualifier("lineSignatureValidator")
     private LineSignatureValidator lineSignatureValidator;
 
+    private void reply(ReplyMessage replyMessage) {
+        try {
+            lineMessagingClient.replyMessage(replyMessage).get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void replyText(String replyToken, String messageToUser){
+        TextMessage textMessage = new TextMessage(messageToUser);
+        ReplyMessage replyMessage = new ReplyMessage(replyToken, textMessage);
+        reply(replyMessage);
+    }
+
     @RequestMapping(value="/webhook", method= RequestMethod.POST)
     public ResponseEntity<String> callback(
             @RequestHeader("X-Line-Signature") String xLineSignature,
@@ -44,6 +58,11 @@ public class Controller {
 
             eventsModel.getEvents().forEach((event)->{
                 // kode reply message disini
+                if (event instanceof MessageEvent) {
+                    MessageEvent messageEvent = (MessageEvent) event;
+                    TextMessageContent textMessageContent = (TextMessageContent) messageEvent.getMessage();
+                    replyText(messageEvent.getReplyToken(), textMessageContent.getText());
+                }
             });
 
             return new ResponseEntity<>(HttpStatus.OK);

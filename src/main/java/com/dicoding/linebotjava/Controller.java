@@ -73,9 +73,15 @@ public class Controller {
                     if(((MessageEvent) event).getMessage() instanceof StickerMessageContent){
                         StickerMessageContent stickerMessageContent = (StickerMessageContent) messageEvent.getMessage();
                         replySticker(messageEvent.getReplyToken(), stickerMessageContent.getPackageId(), stickerMessageContent.getStickerId());
-                    }else {
+                        
+                    }else if(((MessageEvent) event).getMessage() instanceof  TextMessageContent) {
+                        //Reply Text pesan termasuk Reply more message & sticker
                         TextMessageContent textMessageContent = (TextMessageContent) messageEvent.getMessage();
-                        replyText(messageEvent.getReplyToken(), textMessageContent.getText());
+                        List<Message> msgArray = new ArrayList<>();
+                        msgArray.add(new TextMessage(textMessageContent.getText()));
+                        msgArray.add(new StickerMessage("1", "114"));
+                        ReplyMessage replyMessage = new ReplyMessage(messageEvent.getReplyToken(), msgArray);
+                        reply(replyMessage);
                     }
 
                 }

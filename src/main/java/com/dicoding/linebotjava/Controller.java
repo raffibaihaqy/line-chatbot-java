@@ -3,6 +3,7 @@ package com.dicoding.linebotjava;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.client.LineSignatureValidator;
+import com.linecorp.bot.model.PushMessage;
 import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.StickerMessageContent;
@@ -38,13 +39,13 @@ public class Controller {
             throw new RuntimeException(e);
         }
     }
-
+    //Reply Message
     private void replyText(String replyToken, String messageToUser){
         TextMessage textMessage = new TextMessage(messageToUser);
         ReplyMessage replyMessage = new ReplyMessage(replyToken, textMessage);
         reply(replyMessage);
     }
-
+    //Reply Sticker
     private void replySticker(String replyToken, String packageId, String stickerId){
         StickerMessage stickerMessage = new StickerMessage(packageId, stickerId);
         ReplyMessage replyMessage = new ReplyMessage(replyToken, stickerMessage);
@@ -75,7 +76,7 @@ public class Controller {
                         replySticker(messageEvent.getReplyToken(), stickerMessageContent.getPackageId(), stickerMessageContent.getStickerId());
                         
                     }else if(((MessageEvent) event).getMessage() instanceof  TextMessageContent) {
-                        //Reply Text pesan termasuk Reply more message & sticker
+                        //Reply msg include reply more message & sticker
                         TextMessageContent textMessageContent = (TextMessageContent) messageEvent.getMessage();
                         List<Message> msgArray = new ArrayList<>();
                         msgArray.add(new TextMessage(textMessageContent.getText()));
@@ -94,4 +95,19 @@ public class Controller {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
+
+    //Push Message
+    @RequestMapping(value="/pushmessage/{id}/{message}", method=RequestMethod.GET)
+    public ResponseEntity<String> pushmessage(
+            @PathVariable("id") String userId,
+            @PathVariable("message") String textMsg
+    ){
+        TextMessage textMessage = new TextMessage(textMsg);
+        PushMessage pushMessage = new PushMessage(userId, textMessage);
+        push(pushMessage);
+
+
+        return new ResponseEntity<String>("Push message:"+textMsg+"\nsent to: "+userId, HttpStatus.OK);
+    }
+
 }

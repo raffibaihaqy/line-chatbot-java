@@ -3,6 +3,7 @@ package com.dicoding.linebotjava;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.client.LineSignatureValidator;
+import com.linecorp.bot.model.Multicast;
 import com.linecorp.bot.model.PushMessage;
 import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.event.MessageEvent;
@@ -51,7 +52,13 @@ public class Controller {
         ReplyMessage replyMessage = new ReplyMessage(replyToken, stickerMessage);
         reply(replyMessage);
     }
+    //Multicast Message
+    private void sendMulticast(Set<String> sourceUsers, String txtMessage){
+        TextMessage message = new TextMessage(txtMessage);
+        Multicast multicast = new Multicast(sourceUsers, message);
+    }
 
+    //Main
     @RequestMapping(value="/webhook", method= RequestMethod.POST)
     public ResponseEntity<String> callback(
             @RequestHeader("X-Line-Signature") String xLineSignature,
@@ -108,6 +115,20 @@ public class Controller {
 
 
         return new ResponseEntity<String>("Push message:"+textMsg+"\nsent to: "+userId, HttpStatus.OK);
+    }
+
+    //Multicast Message
+    @RequestMapping(value="/multicast", method=RequestMethod.GET)
+    public ResponseEntity<String> multicast(){
+        String[] userIdList = {
+                "Ua32abe983edcfa320899ec1a4db26f68",
+                };
+        Set<String> listUsers = new HashSet<String>(Arrays.asList(userIdList));
+        if(listUsers.size() > 0){
+            String textMsg = "Ini pesan multicast";
+            sendMulticast(listUsers, textMsg);
+        }
+        return new ResponseEntity<String>(HttpStatus.OK);
     }
 
 }

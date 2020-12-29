@@ -9,9 +9,11 @@ import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.StickerMessageContent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
+import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.StickerMessage;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.objectmapper.ModelObjectMapper;
+import com.linecorp.bot.model.profile.UserProfileResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @RestController
@@ -40,22 +43,44 @@ public class Controller {
             throw new RuntimeException(e);
         }
     }
+
     //Reply Message
     private void replyText(String replyToken, String messageToUser){
         TextMessage textMessage = new TextMessage(messageToUser);
         ReplyMessage replyMessage = new ReplyMessage(replyToken, textMessage);
         reply(replyMessage);
     }
+
     //Reply Sticker
     private void replySticker(String replyToken, String packageId, String stickerId){
         StickerMessage stickerMessage = new StickerMessage(packageId, stickerId);
         ReplyMessage replyMessage = new ReplyMessage(replyToken, stickerMessage);
         reply(replyMessage);
     }
+
     //Multicast Message
     private void sendMulticast(Set<String> sourceUsers, String txtMessage){
         TextMessage message = new TextMessage(txtMessage);
         Multicast multicast = new Multicast(sourceUsers, message);
+
+    }
+
+    //Push Message
+    private void push(PushMessage pushMessage){
+        try {
+            lineMessagingClient.pushMessage(pushMessage).get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //Profile API
+    private UserProfileResponse getProfile(String userId){
+        try {
+            return lineMessagingClient.getProfile(userId).get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     //Main
@@ -131,4 +156,21 @@ public class Controller {
         return new ResponseEntity<String>(HttpStatus.OK);
     }
 
+    //Profile API
+    @RequestMapping(value = "/profile/{id}", method = RequestMethod.GET)
+    public void profile(
+            @PathVariable("id") String userId
+    ){
+    UserProfileResponse profile = getProfile(userId);
+    
+        if (profile != null) {
+            String profileName = profile.getDisplayName();
+            TextMessage textMessage = new TextMessage("Hello, " + profileName);
+            PushMessage pushMessage = new PushMessage(userId, textMessage);
+            push(pushMessage);
+    
+            return new ResponseEntity<String>("Hello, "+profileName, HttpStatus.OK);
+        }
+        return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
+    }
 }
